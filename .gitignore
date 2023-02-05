@@ -103,3 +103,10 @@ gas-report.txt
 contracts/test/fuzzing/crytic-export
 
 typechain-types
+.pnp.*
+.yarn/*
+!.yarn/patches
+!.yarn/plugins
+!.yarn/releases
+!.yarn/sdks
+!.yarn/versions
