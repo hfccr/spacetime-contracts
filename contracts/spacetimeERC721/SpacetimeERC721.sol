@@ -26,6 +26,10 @@ contract SpacetimeERC721 is ERC721PresetMinterPauserAutoId {
         _spacetimeClearingHouse = SpacetimeClearingHouse(spacetimeClearingHouse);
     }
 
+    function getCount() public view returns (uint256) {
+        return _count;
+    }
+
     function getDerivative(uint256 tokenId) public view returns (Derivative memory) {
         Derivative memory derivative = derivatives[tokenId];
         return derivative;
@@ -50,8 +54,6 @@ contract SpacetimeERC721 is ERC721PresetMinterPauserAutoId {
         derivative.dealTermStart = dealTermStart;
         derivative.dealTermDuration = dealTermDuration;
         derivative.pricePerEpoch = pricePerEpoch;
-        derivative.onSale = false;
-        derivative.salePrice = 0;
 
         _mint(msg.sender, _count);
         derivatives[_count] = derivative;
@@ -61,11 +63,8 @@ contract SpacetimeERC721 is ERC721PresetMinterPauserAutoId {
 
     // Buy a deal from another client in case the client has set a price for the deal
     function purchase(uint256 tokenId, uint64 client) public {
-        require(
-            derivatives[tokenId].derivativeState == DerivativeState.ClientSet,
-            "Cannot sell this"
-        );
-        require(derivatives[tokenId].onSale == true, "Cannot sell this");
+        require(derivatives[tokenId].derivativeState == DerivativeState.ClientSet);
+        require(derivatives[tokenId].onSale == true);
         require(derivatives[tokenId].salePrice > 0);
         clientCount[derivatives[tokenId].clientEthAddress]--;
         _spacetimeToken.permissionlessTransferFrom(

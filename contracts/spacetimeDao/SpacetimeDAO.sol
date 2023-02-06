@@ -4,6 +4,8 @@ import "./../spacetimeToken/SpacetimeToken.sol";
 import "./../spacetimeERC721/SpacetimeERC721.sol";
 import "@openzeppelin/contracts/access/AccessControlEnumerable.sol";
 import "@openzeppelin/contracts/utils/Context.sol";
+import "./../spacetimeStorage/Derivative.sol";
+import "./../spacetimeStorage/DerivativeState.sol";
 
 contract SpacetimeDAO is Context, AccessControlEnumerable {
     bytes32 public constant ADMIN = keccak256("ADMIN");
@@ -64,5 +66,14 @@ contract SpacetimeDAO is Context, AccessControlEnumerable {
 
     function faucet() public {
         _spacetimeToken.mint(_msgSender(), 10000);
+    }
+
+    function getAllDerivatives() public view returns (Derivative[] memory) {
+        Derivative[] memory derivativesList = new Derivative[](_spacetimeERC721.getCount());
+        for (uint i = 0; i < _spacetimeERC721.getCount(); i++) {
+            Derivative memory derivative = _spacetimeERC721.getDerivative(i);
+            derivativesList[i] = derivative;
+        }
+        return derivativesList;
     }
 }
