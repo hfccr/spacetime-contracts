@@ -7,8 +7,11 @@ import "hardhat-deploy-ethers"
 import { DeployOptions } from "hardhat-deploy/dist/types"
 import {
     SpacetimeToken,
-    SpacetimeDAO
+    SpacetimeDAO,
+    SpacetimeERC721,
+    SpacetimeClearingHouse
 } from "../typechain-types";
+import { spacetimeClearingHouse } from "../typechain-types/contracts"
 
 task(`deploy-suite`, `Deploy entire suite of contracts`).setAction(async (taskArgs, hre) => {
     const { ethers, run, deployments } = hre
@@ -61,13 +64,28 @@ task(`deploy-suite`, `Deploy entire suite of contracts`).setAction(async (taskAr
     console.log("Awaiting deploys")
 
     const spacetimeToken = (await deploy("SpacetimeToken")) as SpacetimeToken
-    const spacetimeDao = (await deploy("SpacetimeDAO", [spacetimeToken.address])) as SpacetimeDAO
+    const spacetimeClearingHouse = (await deploy("SpacetimeClearingHouse")) as SpacetimeClearingHouse
+    const spacetimeERC721= (await deploy("SpacetimeERC721", [spacetimeToken.address, spacetimeClearingHouse.address])) as SpacetimeERC721
+    const spacetimeDao = (await deploy("SpacetimeDAO", [spacetimeToken.address, spacetimeERC721.address])) as SpacetimeDAO
     console.log('Granting minter role');
+    await spacetimeToken.grantRole(ethers.utils.keccak256(ethers.utils.toUtf8Bytes("MINTER_ROLE")), spacetimeERC721.address, {
+        gasLimit: 10000000,
+        maxPriorityFeePerGas: maxPriorityFee?.toString(),
+    });
+    await spacetimeERC721.grantRole(ethers.utils.keccak256(ethers.utils.toUtf8Bytes("MINTER_ROLE")), spacetimeDao.address, {
+        gasLimit: 10000000,
+        maxPriorityFeePerGas: maxPriorityFee?.toString(),
+    });
     await spacetimeToken.grantRole(ethers.utils.keccak256(ethers.utils.toUtf8Bytes("MINTER_ROLE")), spacetimeDao.address, {
         gasLimit: 10000000,
         maxPriorityFeePerGas: maxPriorityFee?.toString(),
     });
+
     console.log('Granting pauser role');
+    await spacetimeToken.grantRole(ethers.utils.keccak256(ethers.utils.toUtf8Bytes("PAUSER_ROLE")), spacetimeERC721.address, {
+        gasLimit: 10000000,
+        maxPriorityFeePerGas: maxPriorityFee?.toString(),
+    });
     await spacetimeToken.grantRole(ethers.utils.keccak256(ethers.utils.toUtf8Bytes("PAUSER_ROLE")), spacetimeDao.address, {
         gasLimit: 10000000,
         maxPriorityFeePerGas: maxPriorityFee?.toString(),
@@ -75,6 +93,8 @@ task(`deploy-suite`, `Deploy entire suite of contracts`).setAction(async (taskAr
     console.info({
         spacetimeDao: spacetimeDao.address,
         spacetimeToken: spacetimeToken.address,
+        spacetimeERC721: spacetimeERC721.address,
+        spacetimeClearingHouse: spacetimeClearingHouse.address
     })
 })
 
