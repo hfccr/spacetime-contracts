@@ -115,42 +115,42 @@ contract SpacetimeERC721 is ERC721PresetMinterPauserAutoId {
         derivatives[tokenId].derivativeState = DerivativeState.DealProposalSubmitted;
     }
 
-    // // Client failed to send proposal
-    // function expireDeal(uint256 tokenId) public {
-    //     require(
-    //         (derivatives[tokenId].derivativeState == DerivativeState.Open ||
-    //             derivatives[tokenId].derivativeState == DerivativeState.DealProposalSubmitted),
-    //         "Deal is not possible to expire"
-    //     );
-    //     derivatives[tokenId].derivativeState = DerivativeState.DealExpired;
-    // }
+    // Client failed to send proposal
+    function expireDeal(uint256 tokenId) public {
+        require(
+            (derivatives[tokenId].derivativeState == DerivativeState.Open ||
+                derivatives[tokenId].derivativeState == DerivativeState.DealProposalSubmitted),
+            "Deal is not possible to expire"
+        );
+        derivatives[tokenId].derivativeState = DerivativeState.DealExpired;
+    }
 
-    // // SP failed to act
-    // function failByProvider(uint256 tokenId) public {
-    //     require(derivatives[tokenId].derivativeState == DerivativeState.DealProposalSubmitted);
-    //     // TODO: add time check
-    //     derivatives[tokenId].derivativeState = DerivativeState.DealFailedByProvider;
-    // }
+    // SP failed to act
+    function failByProvider(uint256 tokenId) public {
+        require(derivatives[tokenId].derivativeState == DerivativeState.DealProposalSubmitted);
+        // TODO: add time check
+        derivatives[tokenId].derivativeState = DerivativeState.DealFailedByProvider;
+    }
 
     // SP completed the deal. Check market API to close the deal.
-    // function completeDeal(uint256 tokenId, uint64 _networkDealID) public {
-    //     require(
-    //         (derivatives[tokenId].derivativeState == DerivativeState.Open ||
-    //             derivatives[tokenId].derivativeState == DerivativeState.DealProposalSubmitted),
-    //         "Deal is not possible to complete"
-    //     );
-    //     _spacetimeClearingHouse.verifyDealData(
-    //         derivatives[tokenId].derivativeType,
-    //         derivatives[tokenId].size,
-    //         derivatives[tokenId].provider,
-    //         derivatives[tokenId].dealTermStart,
-    //         derivatives[tokenId].dealTermDuration,
-    //         derivatives[tokenId].pricePerEpoch,
-    //         derivatives[tokenId].client,
-    //         _networkDealID
-    //     );
-    //     derivatives[tokenId].derivativeState = DerivativeState.DealCompleted;
-    // }
+    function completeDeal(uint256 tokenId, uint64 _networkDealID) public {
+        require(
+            (derivatives[tokenId].derivativeState == DerivativeState.Open ||
+                derivatives[tokenId].derivativeState == DerivativeState.DealProposalSubmitted),
+            "Deal is not possible to complete"
+        );
+        _spacetimeClearingHouse.verifyDealData(
+            derivatives[tokenId].derivativeType,
+            derivatives[tokenId].size,
+            derivatives[tokenId].provider,
+            derivatives[tokenId].dealTermStart,
+            derivatives[tokenId].dealTermDuration,
+            derivatives[tokenId].pricePerEpoch,
+            derivatives[tokenId].client,
+            _networkDealID
+        );
+        derivatives[tokenId].derivativeState = DerivativeState.DealCompleted;
+    }
 
     function completeDealManual(uint256 tokenId) public {
         require(
@@ -160,18 +160,18 @@ contract SpacetimeERC721 is ERC721PresetMinterPauserAutoId {
         derivatives[tokenId].derivativeState = DerivativeState.DealCompleted;
     }
 
-    // // SP no longer wants to do the deal. Works only if the deal hasn't been taken up by any client yet
-    // function withdrawDeal(uint256 tokenId) public {
-    //     require(
-    //         msg.sender == derivatives[tokenId].providerEthAddress,
-    //         "You need to be the provider of this deal to withdraw it"
-    //     );
-    //     require(
-    //         derivatives[tokenId].derivativeState == DerivativeState.Open,
-    //         "The deal needs to be in the open state to withdraw it"
-    //     );
-    //     derivatives[tokenId].derivativeState = DerivativeState.Withdrawn;
-    // }
+    // SP no longer wants to do the deal. Works only if the deal hasn't been taken up by any client yet
+    function withdrawDeal(uint256 tokenId) public {
+        require(
+            msg.sender == derivatives[tokenId].providerEthAddress,
+            "You need to be the provider of this deal to withdraw it"
+        );
+        require(
+            derivatives[tokenId].derivativeState == DerivativeState.Open,
+            "The deal needs to be in the open state to withdraw it"
+        );
+        derivatives[tokenId].derivativeState = DerivativeState.Withdrawn;
+    }
 
     // function getAllDerivatives() public view returns (Derivative[] memory) {
     //     Derivative[] memory derivativesListSend = derivativesList;
